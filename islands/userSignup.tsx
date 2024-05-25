@@ -22,7 +22,7 @@ const UserSignup = () => {
 
       if (response.ok) {
         // Handle successful signup
-        console.log("Signup successful");
+        window.location.href = "/login";
       } else {
         // Handle signup error
         console.error("Signup failed");
