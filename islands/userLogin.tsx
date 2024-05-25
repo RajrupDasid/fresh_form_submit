@@ -3,18 +3,27 @@ import { useSignal } from "@preact/signals";
 const Login = () => {
   const email = useSignal("");
   const password = useSignal("");
+  const isLoading = useSignal(false);
   const handelLogin = async (e: Event) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append("email", email.value);
     formData.append("password", password.value);
     try {
+      isLoading.value = true;
       const response = await fetch("/api/login", {
         method: "POST",
         body: formData,
       });
+      if (response.ok) {
+        const data = await response.json();
+        const set_session = sessionStorage.setItem("intercom", data.token);
+        const set_local = localStorage.setItem("intercom", data.token);
+        isLoading.value = false;
+      }
     } catch (error) {
       console.log(error);
+      isLoading.value = false;
     }
   };
   return (
@@ -125,9 +134,38 @@ const Login = () => {
               </div>
 
               <div className="col-span-6 sm:flex sm:items-center sm:gap-4">
-                <button className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500">
-                  Login
+                <button
+                  className={`inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500 ${
+                    isLoading.value ? "cursor-not-allowed opacity-50" : ""
+                  }`}
+                  disabled={isLoading.value}
+                >
+                  {isLoading.value
+                    ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white">
+                        </div>
+                        <span className="ml-2">Loading...</span>
+                      </div>
+                    )
+                    : (
+                      "Login"
+                    )}
                 </button>
+
+                {isLoading.value && (
+                  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded-md shadow-md">
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600">
+                        </div>
+                        <span className="ml-2 text-blue-600">
+                          Processing...
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <p className="mt-4 text-sm text-gray-500 sm:mt-0">
                   Donot have an account?

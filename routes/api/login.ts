@@ -2,6 +2,7 @@ import { connectToDatabase } from "../../util/util.ts";
 import { Handlers, type PageProps } from "$fresh/server.ts";
 import { verify } from "jsr:@denorg/scrypt@4.4.4";
 import DOMPurify from "npm:isomorphic-dompurify";
+import { create_token } from "../../util/jwttokengenerator.ts";
 
 interface Props {
   email: string;
@@ -17,6 +18,8 @@ export const handler: Handlers<Props> = {
     const password = (formdata.get("password") || "") as string;
     const cleanpassword = DOMPurify.sanitize(password);
 
+    //importing jwt token's secret key
+
     const sql =
       `SELECT email, password FROM "User" WHERE email = '${cleanemail}'`;
 
@@ -24,10 +27,15 @@ export const handler: Handlers<Props> = {
     const client = await connectToDatabase();
     try {
       const result = await client.queryObject(sql);
+      const useremail = result.rows[0].email;
+      if (!useremail) {
+        console.log("no user found with this email");
+      }
       const userpassword = result.rows[0].password;
       const verifypw = verify(cleanpassword, userpassword);
       if (verifypw === true) {
-        const responseData = { message: "login  success" };
+        const authtoken = create_token({ data: useremail });
+        const responseData = { message: "login  success", token: authtoken };
         return new Response(JSON.stringify(responseData), {
           status: 200,
         });
