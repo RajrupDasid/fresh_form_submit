@@ -2,6 +2,7 @@ import { Handlers, type PageProps } from "$fresh/server.ts";
 import { load } from "https://deno.land/std@0.224.0/dotenv/mod.ts";
 import { Client } from "https://deno.land/x/postgres@v0.19.3/mod.ts";
 import { hash } from "jsr:@denorg/scrypt@4.4.4";
+import * as mod from "https://deno.land/std@0.224.0/uuid/mod.ts";
 
 const env = await load();
 const dbuser = env["DB_USER"];
@@ -37,11 +38,12 @@ export const handler: Handlers<Props> = {
     const lastname = formdata.get("last_name") || "";
     const email = formdata.get("email") || "";
     const password = (formdata.get("password") || "") as string;
-    console.log(password);
     const hashpw = hash(password);
+    const isadmin = false;
+    const uuid = crypto.randomUUID();
     const sqlquery =
-      `INSERT INTO "User" (firstname, lastname, email, password) VALUES ($1, $2, $3, $4)`;
-    const values = [firstname, lastname, email, hashpw];
+      `INSERT INTO "User" (firstname, lastname, email, password,isadmin,uid) VALUES ($1, $2, $3, $4,$5,$6)`;
+    const values = [firstname, lastname, email, hashpw, isadmin, uuid];
 
     try {
       const result = await client.queryArray(sqlquery, values);

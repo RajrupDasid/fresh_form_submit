@@ -6,6 +6,7 @@ const UserSignup = () => {
   const email = useSignal("");
   const password = useSignal("");
   const password_confirmation = useSignal("");
+
   const handelSubmit = async (e: Event) => {
     e.preventDefault();
     const formData = new FormData();

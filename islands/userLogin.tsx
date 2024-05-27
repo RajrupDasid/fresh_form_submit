@@ -20,6 +20,13 @@ const Login = () => {
         const set_session = sessionStorage.setItem("intercom", data.token);
         const set_local = localStorage.setItem("intercom", data.token);
         isLoading.value = false;
+        if (data.admin == true) {
+          window.location.href = "/admin";
+        } else if (data.admin == false) {
+          window.location.href = "/proile";
+        } else {
+          window.location.href = "/";
+        }
       }
     } catch (error) {
       console.log(error);

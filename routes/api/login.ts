@@ -8,6 +8,9 @@ interface Props {
   email: string;
   password: string;
   message: string;
+  useremail: string;
+  userid: string;
+  isadmin: boolean;
 }
 
 export const handler: Handlers<Props> = {
@@ -21,7 +24,7 @@ export const handler: Handlers<Props> = {
     //importing jwt token's secret key
 
     const sql =
-      `SELECT email, password FROM "User" WHERE email = '${cleanemail}'`;
+      `SELECT email, password,isadmin,uid FROM "User" WHERE email = '${cleanemail}'`;
 
     // Execute the SQL query
     const client = await connectToDatabase();
@@ -32,10 +35,19 @@ export const handler: Handlers<Props> = {
         console.log("no user found with this email");
       }
       const userpassword = result.rows[0].password;
+      const userid = result.rows[0].uid;
+
+      const isadmin = result.rows[0].isadmin;
+
       const verifypw = verify(cleanpassword, userpassword);
       if (verifypw === true) {
-        const authtoken = create_token({ data: useremail });
-        const responseData = { message: "login  success", token: authtoken };
+        const authtoken = create_token(userid, isadmin);
+
+        const responseData = {
+          message: "login  success",
+          token: authtoken,
+          admin: isadmin,
+        };
         return new Response(JSON.stringify(responseData), {
           status: 200,
         });
