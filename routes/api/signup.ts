@@ -1,26 +1,25 @@
 import { Handlers, type PageProps } from "$fresh/server.ts";
-import { load } from "https://deno.land/std@0.224.0/dotenv/mod.ts";
-import { Client } from "https://deno.land/x/postgres@v0.19.3/mod.ts";
 import { hash } from "jsr:@denorg/scrypt@4.4.4";
-import * as mod from "https://deno.land/std@0.224.0/uuid/mod.ts";
+import DOMPurify from "npm:isomorphic-dompurify";
+import { connectToDatabase } from "../../util/util.ts";
 
-const env = await load();
-const dbuser = env["DB_USER"];
+// const env = await load();
+// const dbuser = env["DB_USER"];
 
-const database = env["DATABASE"];
-const hostname = env["HOST_NAME"];
-const password = env["PASSWORD"];
-const client = new Client({
-  user: dbuser,
-  database: database,
-  hostname: hostname,
-  password: password,
-  port: 5432,
-  tls: {
-    enforce: true,
-  },
-});
-await client.connect();
+// const database = env["DATABASE"];
+// const hostname = env["HOST_NAME"];
+// const password = env["PASSWORD"];
+// const client = new Client({
+//   user: dbuser,
+//   database: database,
+//   hostname: hostname,
+//   password: password,
+//   port: 5432,
+//   tls: {
+//     enforce: true,
+//   },
+// });
+// await client.connect();
 
 interface Props {
   firstname: string;
@@ -33,19 +32,30 @@ interface Props {
 export const handler: Handlers<Props> = {
   async POST(req, ctx) {
     const formdata = await req.formData();
-    console.log(formdata);
-    const firstname = formdata.get("first_name") || "";
-    const lastname = formdata.get("last_name") || "";
-    const email = formdata.get("email") || "";
+    const firstname = (formdata.get("first_name") || "") as string;
+    const lastname = (formdata.get("last_name") || "") as string;
+    const email = (formdata.get("email") || "") as string;
     const password = (formdata.get("password") || "") as string;
     const hashpw = hash(password);
     const isadmin = false;
     const uuid = crypto.randomUUID();
+    // cleaning data before saving
+    const clean_firstname = DOMPurify.sanitize(firstname);
+    const clean_lastname = DOMPurify.sanitize(lastname);
+    const clean_email = DOMPurify.sanitize(email);
+
     const sqlquery =
       `INSERT INTO "User" (firstname, lastname, email, password,isadmin,uid) VALUES ($1, $2, $3, $4,$5,$6)`;
-    const values = [firstname, lastname, email, hashpw, isadmin, uuid];
-
+    const values = [
+      clean_firstname,
+      clean_lastname,
+      clean_email,
+      hashpw,
+      isadmin,
+      uuid,
+    ];
     try {
+      const client = await connectToDatabase();
       const result = await client.queryArray(sqlquery, values);
 
       const responseData = { message: "Signup success" };
@@ -60,8 +70,6 @@ export const handler: Handlers<Props> = {
         headers: { "Content-Type": "application/json" },
         status: 500,
       });
-    } finally {
-      await client.end(); // Close the client connection
     }
   },
 };

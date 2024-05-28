@@ -23,7 +23,7 @@ const Login = () => {
         if (data.admin == true) {
           window.location.href = "/admin";
         } else if (data.admin == false) {
-          window.location.href = "/proile";
+          window.location.href = "/user/profile";
         } else {
           window.location.href = "/";
         }

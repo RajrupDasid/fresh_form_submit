@@ -11,6 +11,7 @@ import * as $api_signup from "./routes/api/signup.ts";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
 import * as $signup from "./routes/signup.tsx";
+import * as $user_profile from "./routes/user/profile.tsx";
 import * as $userLogin from "./islands/userLogin.tsx";
 import * as $userSignup from "./islands/userSignup.tsx";
 import { type Manifest } from "$fresh/server.ts";
@@ -26,6 +27,7 @@ const manifest = {
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
     "./routes/signup.tsx": $signup,
+    "./routes/user/profile.tsx": $user_profile,
   },
   islands: {
     "./islands/userLogin.tsx": $userLogin,
